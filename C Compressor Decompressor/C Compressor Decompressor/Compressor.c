@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <float.h>
+#include <math.h>
 
 #define OUTPUT_BIN_FILENAME "../verts_compressed.bin"
+#define NUM_BITS_PER_BYTE 8
 
 int getNextXYZvalues(FILE* filePtr, double *x, double *y, double *z);
 double maxDouble(double a, double b);
 double minDouble(double a, double b);
+int compress(double value, double minValue, double segmentLength);
 
 int main(int argc, char *argv[])
 {
@@ -18,10 +20,13 @@ int main(int argc, char *argv[])
 	}
 
 	int compressionBits = atoi(argv[1]);
+	int totalPossibleValues = (int)pow(2, compressionBits) - 1;
 
 	FILE* inputDataFile;
 	fopen_s(&inputDataFile, argv[2], "r");
 	//FILE* outputBinFile = fopen(OUTPUT_BIN_FILENAME, "wb");
+
+	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(int));
 
 	double x, y, z;
 	double minValue = DBL_MAX;
@@ -38,13 +43,16 @@ int main(int argc, char *argv[])
 	} while (fileNotEnded);
 	fclose(inputDataFile);
 
-	printf("%lf %lf\n", maxValue, minValue);
+	double segmentLength = (maxValue - minValue) / totalPossibleValues;
+	fopen_s(&inputDataFile, argv[2], "r");
+	do
+	{
+		fileNotEnded = getNextXYZvalues(inputDataFile, &x, &y, &z);
+		printf("%lf %lf %lf\n", x, y, z);
+		printf("%d %d %d\n", compress(x, minValue, segmentLength), compress(y, minValue, segmentLength), compress(z, minValue, segmentLength));
 
-	//fopen_s(&inputDataFile, argv[2], "r");
-	//while (getNextXYZvalues(inputDataFile, &x, &y, &z))
-	//{
-	//}
-	//fclose(inputDataFile);
+	} while (fileNotEnded);
+	fclose(inputDataFile);
 
 	//fclose(outputBinFile);
 
@@ -79,4 +87,10 @@ double maxDouble(double a, double b)
 double minDouble(double a, double b)
 {
 	return (a < b) ? a : b;
+}
+
+int compress(double value, double minValue, double segmentLength)
+{
+	int n = (int)((value - minValue) / segmentLength);	// not adding 1 because compressed value (n) will start from 0
+	return n;
 }
