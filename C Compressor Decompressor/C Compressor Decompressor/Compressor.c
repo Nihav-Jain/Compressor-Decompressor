@@ -6,10 +6,8 @@
 #define OUTPUT_BIN_FILENAME "../verts_compressed.bin"
 #define NUM_BITS_PER_BYTE 8
 
-int getNextXYZvalues(FILE* filePtr, double *x, double *y, double *z);
-double maxDouble(double a, double b);
-double minDouble(double a, double b);
-int compress(double value, double minValue, double segmentLength);
+unsigned short compress(double value, double minValue, double segmentLength);
+int getNextValue(FILE* filePtr, double *value);
 
 int main(int argc, char *argv[])
 {
@@ -26,9 +24,9 @@ int main(int argc, char *argv[])
 	fopen_s(&inputDataFile, argv[2], "r");
 	//FILE* outputBinFile = fopen(OUTPUT_BIN_FILENAME, "wb");
 
-	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(int));
+	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(short));
 
-	double x, y, z;
+	double inputValue;
 	double minValue = DBL_MAX;
 	double maxValue = DBL_MIN;
 	int dataCount = 0;
@@ -36,10 +34,11 @@ int main(int argc, char *argv[])
 	int fileNotEnded;
 	do
 	{
-		fileNotEnded = getNextXYZvalues(inputDataFile, &x, &y, &z);
+		fileNotEnded = getNextValue(inputDataFile, &inputValue);
 		dataCount++;
-		maxValue = maxDouble(maxDouble(x, y), maxDouble(z, maxValue));
-		minValue = minDouble(minDouble(x, y), minDouble(z, minValue));
+		maxValue = max(inputValue, maxValue);
+		minValue = min(inputValue, minValue);
+		//printf("%lf\n", inputValue);
 	} while (fileNotEnded);
 	fclose(inputDataFile);
 
@@ -47,9 +46,8 @@ int main(int argc, char *argv[])
 	fopen_s(&inputDataFile, argv[2], "r");
 	do
 	{
-		fileNotEnded = getNextXYZvalues(inputDataFile, &x, &y, &z);
-		printf("%lf %lf %lf\n", x, y, z);
-		printf("%d %d %d\n", compress(x, minValue, segmentLength), compress(y, minValue, segmentLength), compress(z, minValue, segmentLength));
+		fileNotEnded = getNextValue(inputDataFile, &inputValue);
+		printf("%lf %d\n", inputValue, compress(inputValue, minValue, segmentLength));
 
 	} while (fileNotEnded);
 	fclose(inputDataFile);
@@ -59,38 +57,32 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-int getNextXYZvalues(FILE* filePtr, double *x, double *y, double *z)
+unsigned short compress(double value, double minValue, double segmentLength)
 {
-	int id;
-	fscanf_s(filePtr, "%d: %lf %lf %lf", &id, x, y, z);
-	//printf("%d: %lf %lf %lf\n", id, *x, *y, *z);
-
-	char c;
-	do
-	{
-		c = fgetc(filePtr);
-		//printf("%c", c);
-		if (c == EOF)
-			return 0;
-	} while (c != '\n');
-	if (c == EOF)
-		return 0;
-	//printf("\n");
-	return 1;
-}
-
-double maxDouble(double a, double b)
-{
-	return (a > b) ? a : b;
-}
-
-double minDouble(double a, double b)
-{
-	return (a < b) ? a : b;
-}
-
-int compress(double value, double minValue, double segmentLength)
-{
-	int n = (int)((value - minValue) / segmentLength);	// not adding 1 because compressed value (n) will start from 0
+	unsigned short n = (int)((value - minValue) / segmentLength);	// not adding 1 because compressed value (n) will start from 0
 	return n;
+}
+
+int getNextValue(FILE* filePtr, double *value)
+{
+	static int count = 0;
+	int id;
+	char c;
+	int returnVal = 1;
+	if (count == 0)
+	{
+		fscanf_s(filePtr, "%d:", &id);
+	}
+	fscanf_s(filePtr, "%lf", value);
+	if (count == 2)
+	{
+		do
+		{
+			c = fgetc(filePtr);
+			if (c == EOF)
+				returnVal = 0;
+		} while (c != '\n' && c != EOF);
+	}
+	count = (count + 1) % 3;
+	return returnVal;
 }
