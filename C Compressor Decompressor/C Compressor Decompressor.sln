@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C Compressor Decompressor", "C Compressor Decompressor\C Compressor Decompressor.vcxproj", "{B2909A97-3BA7-4184-965F-3D142C2B4F73}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Compressor", "C Compressor Decompressor\C Compressor Decompressor.vcxproj", "{B2909A97-3BA7-4184-965F-3D142C2B4F73}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Decompressor", "Decompressor\Decompressor.vcxproj", "{27E763B6-7D79-4061-BE0B-FECB689ECCA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B2909A97-3BA7-4184-965F-3D142C2B4F73}.Debug|Win32.Build.0 = Debug|Win32
 		{B2909A97-3BA7-4184-965F-3D142C2B4F73}.Release|Win32.ActiveCfg = Release|Win32
 		{B2909A97-3BA7-4184-965F-3D142C2B4F73}.Release|Win32.Build.0 = Release|Win32
+		{27E763B6-7D79-4061-BE0B-FECB689ECCA5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{27E763B6-7D79-4061-BE0B-FECB689ECCA5}.Debug|Win32.Build.0 = Debug|Win32
+		{27E763B6-7D79-4061-BE0B-FECB689ECCA5}.Release|Win32.ActiveCfg = Release|Win32
+		{27E763B6-7D79-4061-BE0B-FECB689ECCA5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
