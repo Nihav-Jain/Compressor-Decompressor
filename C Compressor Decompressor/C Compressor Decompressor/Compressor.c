@@ -5,6 +5,7 @@
 #include <malloc.h>
 
 #define OUTPUT_BIN_FILENAME "../verts_compressed.bin"
+#define OUTPUT_TXT_FILENAME "../verts_orig_data.txt"
 #define NUM_BITS_PER_BYTE 8
 
 unsigned short compress(double value, double minValue, double segmentLength);
@@ -36,6 +37,8 @@ int main(int argc, char *argv[])
 	fopen_s(&inputDataFile, argv[2], "r");
 	FILE* outputBinFile;
 	fopen_s(&outputBinFile, OUTPUT_BIN_FILENAME, "wb");
+	FILE* outputTxtFile;
+	fopen_s(&outputTxtFile, OUTPUT_TXT_FILENAME, "w");
 
 	printf("%d\n", NUM_BITS_PER_BYTE * sizeof(double));
 
@@ -87,6 +90,7 @@ int main(int argc, char *argv[])
 			bitsLeft--;
 		}
 		printf("\n");
+		fprintf(outputTxtFile, "%lf\n", inputValue);
 	}
 	if (charBitPtr >= 0)
 	{
@@ -95,6 +99,7 @@ int main(int argc, char *argv[])
 
 	fclose(inputDataFile);
 	fclose(outputBinFile);
+	fclose(outputTxtFile);
 
 	return 0;
 }
