@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
+#include <malloc.h>
 
 #define OUTPUT_BIN_FILENAME "../verts_compressed.bin"
 #define NUM_BITS_PER_BYTE 8
 
 unsigned short compress(double value, double minValue, double segmentLength);
 int getNextValue(FILE* filePtr, double *value);
+char getKthBitOfNumber(unsigned short number, unsigned short k, int* bitMasks);
 
 int main(int argc, char *argv[])
 {
@@ -20,11 +22,22 @@ int main(int argc, char *argv[])
 	int compressionBits = atoi(argv[1]);
 	int totalPossibleValues = (int)pow(2, compressionBits) - 1;
 
+	int *bitMasks = (int *)malloc(compressionBits * sizeof(int));
+	int i;
+	int powerOf2 = 2;
+	bitMasks[0] = 1;
+	for (i = 1; i < compressionBits; i++)
+	{
+		bitMasks[i] = powerOf2; //bitMasks[i - 1] + powerOf2;
+		powerOf2 *= 2;
+	}
+
 	FILE* inputDataFile;
 	fopen_s(&inputDataFile, argv[2], "r");
-	//FILE* outputBinFile = fopen(OUTPUT_BIN_FILENAME, "wb");
+	FILE* outputBinFile;
+	fopen_s(&outputBinFile, OUTPUT_BIN_FILENAME, "wb");
 
-	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(short));
+	printf("%d\n", NUM_BITS_PER_BYTE * sizeof(double));
 
 	double inputValue;
 	double minValue = DBL_MAX;
@@ -38,21 +51,50 @@ int main(int argc, char *argv[])
 		dataCount++;
 		maxValue = max(inputValue, maxValue);
 		minValue = min(inputValue, minValue);
-		//printf("%lf\n", inputValue);
 	} while (fileNotEnded);
 	fclose(inputDataFile);
+
+	fwrite(&compressionBits, sizeof(int), 1, outputBinFile);
+	fwrite(&dataCount, sizeof(int), 1, outputBinFile);
+	fwrite(&minValue, sizeof(double), 1, outputBinFile);
+	fwrite(&maxValue, sizeof(double), 1, outputBinFile);
 
 	double segmentLength = (maxValue - minValue) / totalPossibleValues;
+	char charToWrite = 0, kthBit;
+	int carry = 0, charBitPtr = 7, bitsLeft = 0;
+	unsigned short compressedValue;
+
 	fopen_s(&inputDataFile, argv[2], "r");
-	do
+	for (i = 0; i < dataCount; i++)
 	{
-		fileNotEnded = getNextValue(inputDataFile, &inputValue);
-		printf("%lf %d\n", inputValue, compress(inputValue, minValue, segmentLength));
+		getNextValue(inputDataFile, &inputValue);
+		compressedValue = compress(inputValue, minValue, segmentLength);
+		printf("%lf %d\n", inputValue, compressedValue);
+		bitsLeft = compressionBits - 1;
+		while (bitsLeft >= 0)
+		{
+			kthBit = getKthBitOfNumber(compressedValue, bitsLeft, bitMasks);
+			printf("%d", kthBit);
+			kthBit = kthBit << charBitPtr;
+			charToWrite = charToWrite | kthBit;
+			charBitPtr--;
+			if (charBitPtr < 0)
+			{
+				charBitPtr = 7;
+				fwrite(&charToWrite, sizeof(char), 1, outputBinFile);
+				charToWrite = 0;
+			}
+			bitsLeft--;
+		}
+		printf("\n");
+	}
+	if (charBitPtr >= 0)
+	{
+		fwrite(&charToWrite, sizeof(char), 1, outputBinFile);
+	}
 
-	} while (fileNotEnded);
 	fclose(inputDataFile);
-
-	//fclose(outputBinFile);
+	fclose(outputBinFile);
 
 	return 0;
 }
@@ -85,4 +127,12 @@ int getNextValue(FILE* filePtr, double *value)
 	}
 	count = (count + 1) % 3;
 	return returnVal;
+}
+
+// k is 0 for LSB
+char getKthBitOfNumber(unsigned short number, unsigned short k, int* bitMasks)
+{
+	number = number & bitMasks[k];
+	number = number >> k;
+	return   (char)number;
 }
