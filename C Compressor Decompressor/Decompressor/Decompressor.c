@@ -4,8 +4,8 @@
 
 #define NUM_BITS_PER_BYTE 8
 
-double decompress(unsigned short value, double minValue, double segmentLength);
-char getKthBitOfNumber(char number, unsigned short k, int* bitMasks);
+double decompress(unsigned int value, double minValue, double segmentLength);
+char getKthBitOfNumber(char number, unsigned int k, int* bitMasks);
 
 int main(int argc, char* argv[])
 {
@@ -44,11 +44,11 @@ int main(int argc, char* argv[])
 		powerOf2 *= 2;
 	}
 
-	unsigned short compressedValue = 0;
+	unsigned int compressedValue = 0;
 	char inputChar, kthBit;
 	int charBitPtr, bitsLeft = compressionBits-1;
 	int numberOfChars = (int) ceil(compressionBits * dataCount / 8.0f);
-	unsigned short temp;
+	unsigned int temp;
 	double decompressedValue, originalData, sumOfSqDiff = 0;
 	charBitPtr = -1;
 
@@ -88,13 +88,13 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-double decompress(unsigned short value, double minValue, double segmentLength)
+double decompress(unsigned int value, double minValue, double segmentLength)
 {
 	return minValue + value * segmentLength;		// An = A0 + n * d;
 }
 
 // k is 0 for LSB
-char getKthBitOfNumber(char number, unsigned short k, int* bitMasks)
+char getKthBitOfNumber(char number, unsigned int k, int* bitMasks)
 {
 	number = number & bitMasks[k];
 	number = number >> k;

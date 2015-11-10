@@ -4,13 +4,13 @@
 #include <math.h>
 #include <malloc.h>
 
-#define OUTPUT_BIN_FILENAME "../verts_compressed.bin"
-#define OUTPUT_TXT_FILENAME "../verts_orig_data.txt"
+#define OUTPUT_BIN_FILENAME "verts_compressed.bin"
+#define OUTPUT_TXT_FILENAME "verts_orig_data.txt"
 #define NUM_BITS_PER_BYTE 8
 
-unsigned short compress(double value, double minValue, double segmentLength);
+unsigned int compress(double value, double minValue, double segmentLength);
 int getNextValue(FILE* filePtr, double *value);
-char getKthBitOfNumber(unsigned short number, unsigned short k, int* bitMasks);
+char getKthBitOfNumber(unsigned int number, unsigned short k, unsigned int* bitMasks);
 
 int main(int argc, char *argv[])
 {
@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
 	int compressionBits = atoi(argv[1]);
 	int totalPossibleValues = (int)pow(2, compressionBits);
 
-	int *bitMasks = (int *)malloc(compressionBits * sizeof(int));
+	unsigned int *bitMasks = (unsigned int *)malloc(compressionBits * sizeof(unsigned int));
 	int i;
-	int powerOf2 = 2;
+	unsigned int powerOf2 = 2;
 	bitMasks[0] = 1;
 	for (i = 1; i < compressionBits; i++)
 	{
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	FILE* outputTxtFile;
 	fopen_s(&outputTxtFile, OUTPUT_TXT_FILENAME, "w");
 
-	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(double));
+	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(unsigned short));
 
 	double inputValue;
 	double minValue = DBL_MAX;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	double segmentLength = (maxValue - minValue) / totalPossibleValues;
 	char charToWrite = 0, kthBit;
 	int carry = 0, charBitPtr = 7, bitsLeft = 0;
-	unsigned short compressedValue;
+	unsigned int compressedValue;
 
 	fopen_s(&inputDataFile, argv[2], "r");
 	for (i = 0; i < dataCount; i++)
@@ -108,9 +108,9 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-unsigned short compress(double value, double minValue, double segmentLength)
+unsigned int compress(double value, double minValue, double segmentLength)
 {
-	unsigned short n = (int)(((value - minValue) / segmentLength));	// not adding 1 because compressed value (n) will start from 0
+	unsigned int n = (unsigned int)(((value - minValue) / segmentLength));	// not adding 1 because compressed value (n) will start from 0
 	return n;
 }
 
@@ -139,7 +139,7 @@ int getNextValue(FILE* filePtr, double *value)
 }
 
 // k is 0 for LSB
-char getKthBitOfNumber(unsigned short number, unsigned short k, int* bitMasks)
+char getKthBitOfNumber(unsigned int number, unsigned short k, unsigned int* bitMasks)
 {
 	number = number & bitMasks[k];
 	number = number >> k;
