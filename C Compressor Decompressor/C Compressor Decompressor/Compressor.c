@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 	}
 
 	int compressionBits = atoi(argv[1]);
-	int totalPossibleValues = (int)pow(2, compressionBits) - 1;
+	int totalPossibleValues = (int)pow(2, compressionBits);
 
 	int *bitMasks = (int *)malloc(compressionBits * sizeof(int));
 	int i;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	FILE* outputTxtFile;
 	fopen_s(&outputTxtFile, OUTPUT_TXT_FILENAME, "w");
 
-	printf("%d\n", NUM_BITS_PER_BYTE * sizeof(double));
+	//printf("%d\n", NUM_BITS_PER_BYTE * sizeof(double));
 
 	double inputValue;
 	double minValue = DBL_MAX;
@@ -72,12 +72,14 @@ int main(int argc, char *argv[])
 	{
 		getNextValue(inputDataFile, &inputValue);
 		compressedValue = compress(inputValue, minValue, segmentLength);
-		printf("%lf %d\n", inputValue, compressedValue);
+		if (compressedValue == totalPossibleValues)
+			compressedValue--;
+		//printf("%lf %d\n", inputValue, compressedValue);
 		bitsLeft = compressionBits - 1;
 		while (bitsLeft >= 0)
 		{
 			kthBit = getKthBitOfNumber(compressedValue, bitsLeft, bitMasks);
-			printf("%d", kthBit);
+			//printf("%d", kthBit);
 			kthBit = kthBit << charBitPtr;
 			charToWrite = charToWrite | kthBit;
 			charBitPtr--;
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
 			}
 			bitsLeft--;
 		}
-		printf("\n");
+		//printf("\n");
 		fprintf(outputTxtFile, "%lf\n", inputValue);
 	}
 	if (charBitPtr >= 0)
@@ -101,12 +103,14 @@ int main(int argc, char *argv[])
 	fclose(outputBinFile);
 	fclose(outputTxtFile);
 
+	printf("Compression successful.\n");
+
 	return 0;
 }
 
 unsigned short compress(double value, double minValue, double segmentLength)
 {
-	unsigned short n = (int)((value - minValue) / segmentLength);	// not adding 1 because compressed value (n) will start from 0
+	unsigned short n = (int)(((value - minValue) / segmentLength));	// not adding 1 because compressed value (n) will start from 0
 	return n;
 }
 

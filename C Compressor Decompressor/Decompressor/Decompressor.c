@@ -17,27 +17,28 @@ int main(int argc, char* argv[])
 
 	FILE* compressedFile;
 	fopen_s(&compressedFile, argv[1], "rb");
+
+	FILE* origDataFile;
+	fopen_s(&origDataFile, argv[2], "r");
 	
 	int compressionBits, dataCount;
 	fread(&compressionBits, sizeof(int), 1, compressedFile);
 	fread(&dataCount, sizeof(int), 1, compressedFile);
-	//printf("%d %d\n", compressionBits, dataCount);
 
 	double minValue, maxValue;
 	fread(&minValue, sizeof(double), 1, compressedFile);
 	fread(&maxValue, sizeof(double), 1, compressedFile);
-	//printf("%lf %lf\n", minValue, maxValue);
 
-	int totalPossibleValues = (int)pow(2, compressionBits) - 1;
+	int totalPossibleValues = (int)pow(2, compressionBits);
 	double segmentLength = (maxValue - minValue) / totalPossibleValues;
 	minValue = minValue + segmentLength / 2;		// taking average of the segment ranges
 
 
 	int i;
-	int *bitMasks = (int *)malloc(compressionBits * sizeof(int));
+	int *bitMasks = (int *)malloc(NUM_BITS_PER_BYTE * sizeof(int));
 	int powerOf2 = 2;
 	bitMasks[0] = 1;
-	for (i = 1; i < compressionBits; i++)
+	for (i = 1; i < NUM_BITS_PER_BYTE; i++)
 	{
 		bitMasks[i] = powerOf2; //bitMasks[i - 1] + powerOf2;
 		powerOf2 *= 2;
@@ -48,10 +49,9 @@ int main(int argc, char* argv[])
 	int charBitPtr, bitsLeft = compressionBits-1;
 	int numberOfChars = (int) ceil(compressionBits * dataCount / 8.0f);
 	unsigned short temp;
-	double decompressedValue;
+	double decompressedValue, originalData, sumOfSqDiff = 0;
 	charBitPtr = -1;
-	//fread(&inputChar, sizeof(char), 1, compressedFile);
-	//printf("\n");
+
 	for (i = 0; i < dataCount; i++)
 	{
 		bitsLeft = compressionBits - 1;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 				//printf("%X\n", inputChar);
 			}
 			kthBit = getKthBitOfNumber(inputChar, charBitPtr, bitMasks);
-			temp = kthBit; // &0x0001;
+			temp = kthBit & 0x0001;
 			//printf("%d", temp);
 			temp = temp << bitsLeft;
 			compressedValue = compressedValue | temp;
@@ -73,10 +73,18 @@ int main(int argc, char* argv[])
 			charBitPtr--;
 		}
 		decompressedValue = decompress(compressedValue, minValue, segmentLength);
-		printf(" %d %lf\n", compressedValue, decompressedValue);
+		//printf(" %d %lf\n", compressedValue, decompressedValue);
+		//printf("\n");
+		fscanf_s(origDataFile, "%lf", &originalData);
+		originalData -= decompressedValue;
+		sumOfSqDiff += (originalData * originalData);
 	}
 
+	double RMSD = sqrt(sumOfSqDiff / dataCount);
+	printf("Root mean square error for a %d bit compression = %lf\n", compressionBits, RMSD);
+
 	fclose(compressedFile);
+	fclose(origDataFile);
 	return 0;
 }
 
@@ -90,6 +98,5 @@ char getKthBitOfNumber(char number, unsigned short k, int* bitMasks)
 {
 	number = number & bitMasks[k];
 	number = number >> k;
-	printf("%d", number);
 	return number;
 }
