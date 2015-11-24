@@ -11,10 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B2909A97-3BA7-4184-965F-3D142C2B4F73}</ProjectGuid>
+    <ProjectGuid>{FC949573-7A29-4B6F-ABF3-9B8CE36270EF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>CCompressorDecompressor</RootNamespace>
-    <ProjectName>Compressor</ProjectName>
+    <RootNamespace>Decompressor</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -77,7 +76,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Compressor.c" />
+    <ClCompile Include="Decompressor.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

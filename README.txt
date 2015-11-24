@@ -1,0 +1,2 @@
+Q. How many bits would you suggest your lead engineer to compress the data with?
+A. Using 10 bits of compression is reasonable since it gives you an accuracy of upto 2 decimal places (RMS error = 0.008358) and has the lowest file size for this accuracy.
